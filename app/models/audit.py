@@ -1,7 +1,8 @@
 from sqlalchemy import String, DateTime, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime, timezone
 from app.database import Base
+
 
 class IncidentAuditLog(Base):
     __tablename__ = "incident_audit_logs"
@@ -16,3 +17,4 @@ class IncidentAuditLog(Base):
     
     changed_by: Mapped[str] = mapped_column(String(100))
     changed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    incident: Mapped["Incident"] = relationship(back_populates="audit_logs")

@@ -10,6 +10,13 @@ engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Nouvelle syntaxe SQLAlchemy 2.0
 class Base(DeclarativeBase):
     pass
+
+# Nouvelle place pour le gestionnaire de connexion
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

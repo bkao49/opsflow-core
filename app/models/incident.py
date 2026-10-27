@@ -1,7 +1,8 @@
-from sqlalchemy import String, Text, DateTime
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import String, Text, DateTime, Boolean
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime, timezone
 from app.database import Base
+
 
 class Incident(Base):
     __tablename__ = "incidents"
@@ -18,3 +19,5 @@ class Incident(Base):
     
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     sla_due_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    is_deleted: Mapped[bool]= mapped_column(Boolean, default=False)
+    audit_logs: Mapped[list["IncidentAuditLog"]] = relationship(back_populates="incident", cascade="all, delete-orphan")

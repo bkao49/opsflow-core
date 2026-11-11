@@ -38,6 +38,7 @@ def get_all_incidents(status: str | None = None, db: Session = Depends(get_db), 
     
     # 1. On prépare la requête de base (qui sélectionne tout)
     query = select(Incident)
+    query = query.where(Incident.is_deleted == False)
     
     # 2. SI l'utilisateur a fourni un statut, on ajoute le filtre (le WHERE)
     if status:
@@ -47,7 +48,7 @@ def get_all_incidents(status: str | None = None, db: Session = Depends(get_db), 
     incidents = db.scalars(query).all()
     
     return incidents
-@router.get("/{indicent_id}", response_model=IncidentResponse)
+@router.get("/{incident_id}", response_model=IncidentResponse)
 def get_incident(incident_id: int, db:Session= Depends(get_db)):
     incident=db.get(Incident, incident_id)
     if not incident:
@@ -103,3 +104,12 @@ def get_incident_audit_logs(incident_id: int, db: Session = Depends(get_db)):
     # 2. La magie de SQLAlchemy : on renvoie directement l'attribut "audit_logs"
     # SQLAlchemy va secrètement faire un "SELECT * FROM incident_audit_logs WHERE incident_id = ..."
     return db_incident.audit_logs
+
+@router.delete("/{incident_id}", status_code=204)
+def delete_incident(incident_id: int, db: Session = Depends(get_db)):
+    db_incident = db.get(Incident, incident_id)
+    if not db_incident:
+        raise HTTPException(status_code=404, detail="Incident non trouvé")
+    db_incident.is_deleted=True
+    db.commit()
+    return None

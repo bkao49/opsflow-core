@@ -33,7 +33,7 @@ class IncidentResponse(IncidentCreate):
 class IncidentUpdate(BaseModel):
     # Tout est optionnel (Optional) car le technicien peut vouloir 
     # modifier seulement le statut, ou seulement l'assignation.
-    status: Optional[str] = None
+    status: Optional[IncidentStatus] = None
     assigned_to: Optional[str] = None
     
     # Pour simuler qui fait l'action (en vrai, ça viendrait du token de connexion)

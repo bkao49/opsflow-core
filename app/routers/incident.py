@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
@@ -33,7 +33,7 @@ def create_incident(payload: IncidentCreate, db: Session= Depends(get_db)):
     return new_db_incident
 
 @router.get("/", response_model=list[IncidentResponse])
-def get_all_incidents(status: str | None = None, db: Session = Depends(get_db), skip: int =0, limit: int = 10):
+def get_all_incidents(status: str | None = None, db: Session = Depends(get_db), skip: int =0, limit: int = Query(default=10, ge=1, le=100, description="Éléments par page")):
 
     
     # 1. On prépare la requête de base (qui sélectionne tout)

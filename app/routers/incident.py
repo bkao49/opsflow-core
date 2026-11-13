@@ -53,6 +53,8 @@ def get_incident(incident_id: int, db:Session= Depends(get_db)):
     incident=db.get(Incident, incident_id)
     if not incident:
         raise HTTPException(status_code=404, detail="Incident non trouvé")
+    if incident.is_deleted:
+        raise HTTPException(status_code=404, detail="Incident supprimé")
     return incident
 @router.patch("/{incident_id}", response_model=IncidentResponse)
 def update_incident(incident_id: int, payload: IncidentUpdate, db: Session = Depends(get_db)):
@@ -60,6 +62,8 @@ def update_incident(incident_id: int, payload: IncidentUpdate, db: Session = Dep
 
     if not db_incident:
         raise HTTPException(status_code=404, detail="Incident non trouvé")
+    if db_incident.is_deleted:
+        raise HTTPException(status_code=404, detail="Incident supprimé")
 
     if payload.status is not None and payload.status != db_incident.status:
         
@@ -100,6 +104,8 @@ def get_incident_audit_logs(incident_id: int, db: Session = Depends(get_db)):
     db_incident = db.get(Incident, incident_id)
     if not db_incident:
         raise HTTPException(status_code=404, detail="Incident non trouvé")
+    if db_incident.is_deleted:
+        raise HTTPException(status_code=404, detail="Incident supprimé")
     
     # 2. La magie de SQLAlchemy : on renvoie directement l'attribut "audit_logs"
     # SQLAlchemy va secrètement faire un "SELECT * FROM incident_audit_logs WHERE incident_id = ..."
@@ -110,6 +116,8 @@ def delete_incident(incident_id: int, db: Session = Depends(get_db)):
     db_incident = db.get(Incident, incident_id)
     if not db_incident:
         raise HTTPException(status_code=404, detail="Incident non trouvé")
+    if db_incident.is_deleted:
+        raise HTTPException(status_code=404, detail="Incident supprimé")
     db_incident.is_deleted=True
     db.commit()
     return None

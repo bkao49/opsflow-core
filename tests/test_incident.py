@@ -7,7 +7,7 @@ def test_create_incident(client):
     }
     reponse=client.post("/incidents/",json=donnees)
 
-    assert reponse.status_code==200
+    assert reponse.status_code==201
     assert reponse.json()["title"] == "Panne du Wi-Fi"
 def test_liste_vide(client):
     reponse = client.get("/incidents/")

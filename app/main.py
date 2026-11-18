@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from app.schemas.incident import IncidentCreate, IncidentResponse
 from app.models import incident, audit
@@ -7,8 +8,21 @@ from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware   
 from app.database import engine, Base, SessionLocal
-Base.metadata.create_all(bind=engine)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # 1. AVANT LE YIELD : S'exécute une seule fois au démarrage du serveur
+    print("Démarrage : Création des tables...")
+    Base.metadata.create_all(bind=engine)
+    
+    yield  # --- L'APPLICATION TOURNE ET REÇOIT LES CLIENTS ICI ---
+    
+    # 2. APRÈS LE YIELD : S'exécute quand on éteint le serveur
+    print("Arrêt du serveur : Nettoyage...")
+
+# On branche le lifespan à l'application
+
 app = FastAPI(
+    lifespan=lifespan,
     title="OpsFlow Core API",
     description="Backend de gestion d'incidents IT et suivi des SLA",
     version="0.1.0",

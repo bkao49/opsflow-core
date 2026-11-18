@@ -1,7 +1,7 @@
 import os
+os.environ["DATA_BASE_URL"] = "sqlite://"   # avant tout import de "app"
 
-# DOIT rester avant tout import de "app" (voir plus haut)
-os.environ["DATA_BASE_URL"] = "sqlite://"
+from datetime import datetime, timezone
 
 import pytest
 from fastapi.testclient import TestClient
@@ -10,8 +10,10 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.main import app
-from app.database import Base, get_db   # get_db vient de app.database
-# Configuration du moteur SQLite en mémoire RAM
+from app.database import Base, get_db
+from app.models.incident import Incident
+from app.services.sla import calculate_sla_deadline
+
 engine_test = create_engine(
     "sqlite://",
     connect_args={"check_same_thread": False},
@@ -55,3 +57,30 @@ def client(db_session): # <-- Elle réclame la fixture db_session juste au-dessu
         
     # 3. APRÈS LE TEST : On nettoie les overrides
     app.dependency_overrides.clear()
+
+
+
+@pytest.fixture
+def creer_incident(db_session):
+
+    # 1. La fonction d'aide, avec des valeurs par défaut pratiques
+    def _creer_incident(titre="Panne du Wi-Fi", severity="P1", is_deleted=False):
+        maintenant = datetime.now(timezone.utc)
+        incident = Incident(
+            title=titre,
+            description="Plus de connexion au 2e étage",
+            severity=severity,
+            status="OPEN",
+            reporter_id="kohy",
+            # sla_due_at est OBLIGATOIRE en base : c'est l'API qui le calcule
+            # d'habitude, ici on le calcule nous-mêmes avec la même fonction
+            sla_due_at=calculate_sla_deadline(severity, maintenant),
+            is_deleted=is_deleted,
+        )
+        db_session.add(incident)
+        db_session.commit()
+        db_session.refresh(incident)   # recharge l'objet : on récupère l'id attribué par la base
+        return incident
+
+    # 2. On retourne LA FONCTION ELLE-MÊME (sans parenthèses)
+    return _creer_incident

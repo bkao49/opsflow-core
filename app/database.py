@@ -8,7 +8,7 @@ load_dotenv()
 
 SQLALCHEMY_DATABASE_URL = os.getenv("DATA_BASE_URL")
 if not SQLALCHEMY_DATABASE_URL:
-    raise RuntimeError("ERREUR CRITIQUE : La variable SQLALCHEMY_DATABASE_URL est introuvable dans le .env !")
+    raise RuntimeError("ERREUR CRITIQUE : La variable DATA_BASE_URL est introuvable dans le .env !")
 
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)

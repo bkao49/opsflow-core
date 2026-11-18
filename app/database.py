@@ -1,8 +1,14 @@
+import os
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
+load_dotenv()
 
-SQLALCHEMY_DATABASE_URL = "postgresql+psycopg://opsflow_user:supersecretpassword@localhost:5432/opsflow_db"
+
+SQLALCHEMY_DATABASE_URL = os.getenv("DATA_BASE_URL")
+if not SQLALCHEMY_DATABASE_URL:
+    raise RuntimeError("ERREUR CRITIQUE : La variable SQLALCHEMY_DATABASE_URL est introuvable dans le .env !")
 
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
